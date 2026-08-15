@@ -15,6 +15,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+from flask import Flask
+
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # ==================== APP CONFIG ====================
 app = Flask(__name__)
