@@ -35,19 +35,6 @@ import random
 # FLASK APPLICATION
 # ============================================================
 
-app = Flask(__name__)
-
-app.secret_key = os.environ.get(
-    "SECRET_KEY",
-    "dev-secret-key-change-in-production"
-)
-
-app.config["UPLOAD_FOLDER"] = "/tmp/uploads"
-app.config["REPORTS_FOLDER"] = "/tmp/reports"
-
-os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-os.makedirs(app.config["REPORTS_FOLDER"], exist_ok=True)
-
 # ==================== APP CONFIG ====================
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -742,15 +729,15 @@ class SecurityReportGenerator:
         .remediation-box {{ margin-top: 16px; padding: 16px; background: rgba(16,185,129,0.1); border-left: 4px solid var(--risk-info); border-radius: var(--radius-sm); }}
         .finding-meta {{ display: flex; gap: 20px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; color: var(--text-muted); }}
 
-        @media print {
-            body { background:#fff !important; color:#111 !important; padding:0 !important; }
-            .container { max-width:none !important; border:0 !important; box-shadow:none !important; background:#fff !important; }
-            .header { background:#0a1a3b !important; color:#fff !important; break-inside:avoid; }
-            .card,.methodology-group { break-inside:avoid; box-shadow:none !important; }
-            button { display:none !important; }
-            .finding-detailed-content { display:block !important; }
-            .collapse-content { display:block !important; }
-        }
+        @media print {{
+            body {{ background:#fff !important; color:#111 !important; padding:0 !important; }}
+            .container {{ max-width:none !important; border:0 !important; box-shadow:none !important; background:#fff !important; }}
+            .header {{ background:#0a1a3b !important; color:#fff !important; break-inside:avoid; }}
+            .card,.methodology-group {{ break-inside:avoid; box-shadow:none !important; }}
+            button {{ display:none !important; }}
+            .finding-detailed-content {{ display:block !important; }}
+            .collapse-content {{ display:block !important; }}
+        }}
         .footer {{ margin-top: 50px; padding-top: 24px; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 0.9rem; }}
     </style>
 </head>
