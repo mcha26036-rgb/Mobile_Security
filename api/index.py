@@ -23,11 +23,6 @@ from flask import (
 
 from werkzeug.utils import secure_filename
 
-import matplotlib
-matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
-import numpy as np
 import random
 
 
@@ -86,7 +81,7 @@ def init_db():
             issue_description TEXT,
             remediation TEXT,
             evidence TEXT,
-            references TEXT,  -- JSON list
+            findings_references TEXT,  -- JSON list
             timestamp TEXT,
             count INTEGER,
             status TEXT,
@@ -480,70 +475,6 @@ class SecurityReportGenerator:
         }
         self.framework = SecurityAssessmentFramework()
 
-    def generate_charts(self, findings):
-        risk_chart = self.generate_risk_breakdown_chart(findings)
-        coverage_chart = self.generate_methodology_coverage_chart(findings)
-        chart_data = self.get_chartjs_data(findings)
-        return risk_chart, coverage_chart, chart_data
-
-    def generate_risk_breakdown_chart(self, findings):
-        try:
-            risk_counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Informational": 0}
-            for finding in findings:
-                risk = normalize_risk_level(finding.get("risk", "Informational"))
-                if risk in risk_counts:
-                    risk_counts[risk] += 1
-            risks = ["Critical", "High", "Medium", "Low", "Informational"]
-            counts = [risk_counts[r] for r in risks]
-            colors = [RISK_COLORS[r] for r in risks]
-            fig, ax = plt.subplots(figsize=(8, 5))
-            bars = ax.bar(risks, counts, color=colors, edgecolor='white', linewidth=1.5)
-            ax.set_title('Risk Level Distribution', fontsize=14, fontweight='bold', color='#0a1a3b')
-            ax.set_xlabel('Risk Level', fontsize=12)
-            ax.set_ylabel('Number of Findings', fontsize=12)
-            ax.grid(True, alpha=0.3, axis='y')
-            for bar, count in zip(bars, counts):
-                if count > 0:
-                    ax.text(bar.get_x() + bar.get_width()/2., count + 0.1, f'{count}', ha='center', va='bottom', fontweight='bold')
-            buf = io.BytesIO()
-            fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor='#f5f5f5')
-            buf.seek(0)
-            chart_b64 = base64.b64encode(buf.read()).decode('utf-8')
-            plt.close(fig)
-            return chart_b64
-        except Exception as e:
-            logging.error(f"Risk chart error: {e}")
-            return ""
-
-    def generate_methodology_coverage_chart(self, findings):
-        try:
-            methodology_counts = {"SAST": 0, "SCA": 0, "DAST": 0, "PENTEST": 0}
-            for finding in findings:
-                meth = finding.get("methodology", "SAST")
-                if meth in methodology_counts:
-                    methodology_counts[meth] += 1
-            methodologies = list(methodology_counts.keys())
-            counts = [methodology_counts[m] for m in methodologies]
-            colors = [METHODOLOGY_COLORS.get(m, "#6b7280") for m in methodologies]
-            fig, ax = plt.subplots(figsize=(8, 5))
-            bars = ax.bar(methodologies, counts, color=colors, edgecolor='white', linewidth=1.5)
-            ax.set_title('Methodology Coverage', fontsize=14, fontweight='bold', color='#0a1a3b')
-            ax.set_xlabel('Methodology', fontsize=12)
-            ax.set_ylabel('Number of Findings', fontsize=12)
-            ax.grid(True, alpha=0.3, axis='y')
-            for bar, count in zip(bars, counts):
-                if count > 0:
-                    ax.text(bar.get_x() + bar.get_width()/2., count + 0.1, f'{count}', ha='center', va='bottom', fontweight='bold')
-            buf = io.BytesIO()
-            fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor='#f5f5f5')
-            buf.seek(0)
-            chart_b64 = base64.b64encode(buf.read()).decode('utf-8')
-            plt.close(fig)
-            return chart_b64
-        except Exception as e:
-            logging.error(f"Coverage chart error: {e}")
-            return ""
-
     def get_chartjs_data(self, findings):
         risk_counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Informational": 0}
         for finding in findings:
@@ -574,7 +505,7 @@ class SecurityReportGenerator:
 
     def generate_professional_html_report(self, findings):
         findings = deduplicate_findings(findings)
-        risk_chart_b64, coverage_chart_b64, chart_data = self.generate_charts(findings)
+        chart_data = self.get_chartjs_data(findings)
         total_issues = len(findings)
         critical_issues = sum(1 for f in findings if normalize_risk_level(f.get("risk")) == "Critical")
         high_issues = sum(1 for f in findings if normalize_risk_level(f.get("risk")) == "High")
@@ -1105,7 +1036,7 @@ def report_generator():
                     INSERT INTO findings (
                         report_id, finding_id, title, category, risk, priority, cvss_score, cwe_id, owasp_category,
                         methodology, source_tool, affected_component, issue_description, remediation, evidence,
-                        references, timestamp, count, status, assigned_to, due_date, targets, impact, poc_text,
+                        findings_references, timestamp, count, status, assigned_to, due_date, targets, impact, poc_text,
                         poc_images, burp_suite_scan_id, burp_suite_issue_type
                     ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ''', (
