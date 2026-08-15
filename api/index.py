@@ -8,17 +8,45 @@ import sqlite3
 import re
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-from flask import Flask, render_template_string, request, redirect, url_for, flash, send_file, session, jsonify
+
+from flask import (
+    Flask,
+    render_template_string,
+    request,
+    redirect,
+    url_for,
+    flash,
+    send_file,
+    session,
+    jsonify,
+)
+
 from werkzeug.utils import secure_filename
+
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from flask import Flask
+
+
+# ============================================================
+# FLASK APPLICATION
+# ============================================================
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
+
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "dev-secret-key-change-in-production"
+)
+
+app.config["UPLOAD_FOLDER"] = "/tmp/uploads"
+app.config["REPORTS_FOLDER"] = "/tmp/reports"
+
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+os.makedirs(app.config["REPORTS_FOLDER"], exist_ok=True)
 
 # ==================== APP CONFIG ====================
 app = Flask(__name__)
